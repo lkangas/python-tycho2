@@ -5,7 +5,8 @@ Created on Sat Oct 21 22:35:50 2017
 @author: lauri.kangas
 """
 
-from numpy import sin,cos,arccos,arctan2,mod,pi,array,hypot
+import numpy as np
+from numpy import sin,cos,arccos,arctan2,mod,pi
 from projections import stereographic
 
 def rotate_RADEC(RAs, DECs, center_RA, center_DEC, output='xyz'):
@@ -61,12 +62,13 @@ def fov_radius(fov, projection=stereographic):
     # return half-diagonal radius of rectangular fov of given width/height
     # with given projection
     
-    fov = array(fov) # if fov wasn't already array
+    fov = np.radians(np.array(fov)) # if fov wasn't already array
     half_fov_angle = fov/2
     half_fov_imageplane = projection(half_fov_angle)
-    half_diagonal_imageplane = hypot(*half_fov_imageplane)
+    half_diagonal_imageplane = np.hypot(*half_fov_imageplane)
+    half_diagonal_radians = projection(half_diagonal_imageplane, inverse=True)
     
-    return projection(half_diagonal_imageplane, inverse=True)
+    return np.degrees(half_diagonal_radians)
     
 
 def xyz_to_imagexy(x, y, z, \
