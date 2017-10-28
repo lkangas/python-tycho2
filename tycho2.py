@@ -73,7 +73,12 @@ class tycho2:
         region_xyz = coord.rotate_RADEC(region_RAs, region_DECs, center_RA, center_DEC)
         R = coord.xyz_radius_from_origin(*region_xyz)
         
-        return np.nonzero(R < radius + region_radii)
+        regions = np.nonzero(R < radius + region_radii)
+        
+        # GSC index has an extra row in the end (index 9537) marked at RADEC 0,0. filter it out.
+        regions = regions[regions < self._index.shape[0]-1]
+        
+        return regions
             
         
         
