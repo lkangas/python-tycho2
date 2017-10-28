@@ -9,7 +9,7 @@ import numpy as np
 import coordinate_transformations as coord
 
 class tycho2:
-    def __init__(self, index_filename, catalog_filename, supplement_filename)
+    def __init__(self, index_filename, catalog_filename, supplement_filename):
         self._index = np.load(index_filename)
         self._catalog = np.load(catalog_filename, mmap_mode='r')
         self._supplement = np.load(supplement_filename)
