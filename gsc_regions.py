@@ -52,3 +52,17 @@ def find_GSC_regions(index, center, rotation, fov, \
         indices = R < half_diagonal_angle + region_radii
     
     return np.nonzero(indices) # return numbers instead of boolean tables
+
+def regions_within_radius(index, center, radius):
+        center_RA, center_DEC = center
+    
+    region_RAs = index[:,2] # GSC region central coords
+    region_DECs = index[:,3]
+    region_radii = index[:,4] # GSC region corner radius
+    
+    # lets rotate coordinates so that center_RA and center_DEC are at origin
+    region_xyz = coord.rotate_RADEC(region_RAs, region_DECs, center_RA, center_DEC)
+    R = coord.xyz_radius_from_origin(*region_xyz)
+    
+    return np.nonzero(R < radius + region_radii)
+

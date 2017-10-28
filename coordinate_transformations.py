@@ -54,13 +54,16 @@ def tilt_xyz_y(x, y, z, angle, x_only=False):
     
     return xx,yy,zz
 
+def xyz_radius_from_origin(x, *args):
+    return arccos(x)
+
 def xyz_to_imagexy(x, y, z, \
                    rotation=0, projection=stereographic, include_R=False):
     # project xyz coordinates on a sphere to image plane
     # R can be returned for filtering GSR regions
 
     # calculate angular distance from image center along sphere
-    R = arccos(x)
+    R = xyz_radius_from_origin(x)
     
     r = projection(R)
     
@@ -76,3 +79,5 @@ def xyz_to_imagexy(x, y, z, \
         return image_x, image_y, R
     
     return image_x, image_y
+
+
