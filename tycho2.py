@@ -61,8 +61,20 @@ class tycho2:
         
         return image_x, image_y, mags
         
+    def regions_within_radius(self, center, radius):
+        radius = np.radians(radius)
+        center_RA, center_DEC = center
         
+        region_RAs = self._index[:,2] # GSC region central coords
+        region_DECs = self._index[:,3]
+        region_radii = self._index[:,4] # GSC region corner radius
         
+        # lets rotate coordinates so that center_RA and center_DEC are at origin
+        region_xyz = coord.rotate_RADEC(region_RAs, region_DECs, center_RA, center_DEC)
+        R = coord.xyz_radius_from_origin(*region_xyz)
+        
+        return np.nonzero(R < radius + region_radii)
+            
         
         
         
