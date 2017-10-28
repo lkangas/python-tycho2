@@ -7,18 +7,12 @@ Created on Sun Oct 22 12:42:31 2017
 
 import numpy as np
 import coordinate_transformations as coord
-import projections
 
 class tycho2:
-    def __init__(self, index_filename, catalog_filename, supplement_filename, \
-                 projection=None):
+    def __init__(self, index_filename, catalog_filename, supplement_filename)
         self._index = np.load(index_filename)
         self._catalog = np.load(catalog_filename, mmap_mode='r')
         self._supplement = np.load(supplement_filename)
-        if projection:
-            self._projection = projection
-        else:
-            self._projection = projections.stereographic
         
     def regions_within_radius(self, center, radius):
         radius = np.radians(radius)
