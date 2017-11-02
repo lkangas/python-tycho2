@@ -7,7 +7,7 @@ Created on Sat Oct 21 22:35:50 2017
 
 import numpy as np
 from numpy import sin,cos,arccos,arctan2,mod,pi
-from projections import stereographic
+import projections
 
 def rotate_RADEC(RAs, DECs, center_RA, center_DEC, output='xyz'):
     # rotate RA,DEC coordinates to turn center_RA,center_DEC to origin
@@ -58,7 +58,7 @@ def tilt_xyz_y(x, y, z, angle, x_only=False):
 def xyz_radius_from_origin(x, *args):
     return arccos(x)
 
-def fov_radius(fov, projection=stereographic):
+def fov_radius(fov, projection=projections.stereographic):
     # return half-diagonal radius of rectangular fov of given width/height
     # with given projection
     
@@ -69,10 +69,27 @@ def fov_radius(fov, projection=stereographic):
     half_diagonal_radians = projection(half_diagonal_imageplane, inverse=True)
     
     return np.degrees(half_diagonal_radians)
+
+def radius2fov(radius, aspect_ratio, projection=projections.stereographic):
+    # aspect_ratio = height/width
+    half_diagonal_radians = np.radians(radius)
+    half_diagonal_imageplane = projection(half_diagonal_radians)
+    diagonal_imageplane = 2 * half_diagonal_imageplane
+    
+    width_imageplane = diagonal_imageplane**2 / (1 + aspect_ratio**2)
+    height_imageplane = aspect_ratio*width_imageplane
+    
+    fov_imageplane = np.array([width_imageplane, height_imageplane])
+    half_fov_imageplane = fov_imageplane/2
+    half_fov_radians = projection(half_fov_imageplane, inverse=True)
+    fov_radians = half_fov_radians*2
+    
+    return np.degrees(fov_radians), np.array([width_imageplane, height_imageplane])
+    
     
 
 def xyz_to_imagexy(x, y, z, \
-                   rotation=0, projection=stereographic, include_R=False):
+                   rotation=0, projection=projections.stereographic, include_R=False):
     # project xyz coordinates on a sphere to image plane
     # R can be returned for filtering GSR regions
 
@@ -94,4 +111,23 @@ def xyz_to_imagexy(x, y, z, \
     
     return image_x, image_y
 
+# transform X/Y star locations from image plane coordinates to pixel coordinates (non-integer)
+# in: X/Y stars, sensor dimensions, pixel counts
 
+def imagexy_to_pixelXY(xy, sensor_size=None, resolution=None, pixel_scale=None, axis='ij'):
+    # x,y star locations on image plane to X,Y pixel coordinates (non-integer)
+    
+    x, y = xy
+    
+    if axis == 'ij':
+        y *= -1
+    else: # 'xy'
+        pass
+    
+    sensor_width, sensor_height = sensor_size
+    pixels_x, pixels_y = resolution
+    
+    X = (x+sensor_width)/sensor_width*pixels_x/2
+    Y = (y+sensor_height)/sensor_height*pixels_y/2
+    
+    return X, Y
