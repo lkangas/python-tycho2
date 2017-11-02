@@ -114,7 +114,7 @@ def xyz_to_imagexy(x, y, z, \
 # transform X/Y star locations from image plane coordinates to pixel coordinates (non-integer)
 # in: X/Y stars, sensor dimensions, pixel counts
 
-def imagexy_to_pixelXY(xy, sensor_size=None, resolution=None, pixel_scale=None, axis='ij'):
+def imagexy_to_pixelXY(xy, resolution, sensor_size=None, pixel_scale=None, axis='ij'):
     # x,y star locations on image plane to X,Y pixel coordinates (non-integer)
     
     x, y = xy
@@ -124,10 +124,16 @@ def imagexy_to_pixelXY(xy, sensor_size=None, resolution=None, pixel_scale=None, 
     else: # 'xy'
         pass
     
-    sensor_width, sensor_height = sensor_size
-    pixels_x, pixels_y = resolution
+    if pixel_scale:
+        pixel_imageplane = np.radians(pixel_scale/3600)
+        X = x/pixel_imageplane + resolution[0]/2
+        Y = y/pixel_imageplane + resolution[1]/2
+        
+    if sensor_size:
+        sensor_width, sensor_height = sensor_size
+        pixels_x, pixels_y = resolution
     
-    X = (x+sensor_width)/sensor_width*pixels_x/2
-    Y = (y+sensor_height)/sensor_height*pixels_y/2
+        X = (x+sensor_width)/sensor_width*pixels_x/2
+        Y = (y+sensor_height)/sensor_height*pixels_y/2
     
     return X, Y
