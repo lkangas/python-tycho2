@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Dec 25 18:07:42 2017
-
+    
 @author: vostok
 """
-
-import numpy as np
+from numpy import empty_like
 
 def icp_metric(image_stars, catalog_stars, vectors=False):
-    closest_distances = np.empty_like(image_stars['X'])
-    closest_indices = np.empty_like(image_stars['X'])
+    closest_distances = empty_like(image_stars['X'])
+    closest_indices = empty_like(image_stars['X'])
     
     catalog_X, catalog_Y = catalog_stars
     for i, star in enumerate(image_stars):
