@@ -87,4 +87,4 @@ def submit_image(filename, session_key):
 
 
 if __name__ == '__main__':
-    main('orion.jpg')
+    solve('orion.jpg')
