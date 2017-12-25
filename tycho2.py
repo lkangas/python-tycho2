@@ -65,7 +65,9 @@ class tycho2:
 #                                                rotation=rotation, \
 #                                                projection=self._projection)
         
-        
+    def stars_within_radius(self, center_RADEC, radius, LM):
+        regions = self.regions_within_radius(center_RADEC, radius)
+        return self.stars_in_regions(regions, LM=LM)
             
         
         
