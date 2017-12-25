@@ -1,21 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Dec 24 15:33:29 2017
+Created on Mon Dec 25 15:19:55 2017
 
 @author: vostok
 """
 
 import os
-from astropy.io import fits
 import tempfile
-from PIL import Image
-import numpy as np
+from astropy.io import fits
 
-def image2xy(data):
+def extract_stars(input_array):
     (infilehandle, infilepath) = tempfile.mkstemp(suffix='.fits')
     os.close(infilehandle)
 
-    fits.writeto(infilepath, data.astype('float32'), fits.Header(), overwrite=True)
+    fits.writeto(infilepath, \
+                 input_array.astype('float32'), \
+                 fits.Header(), \
+                 overwrite=True)
 
     return_code = os.system('image2xy -O {}'.format(infilepath))
     if return_code != 0:
@@ -26,11 +27,3 @@ def image2xy(data):
     os.unlink(infilepath)
 
     return result
-
-#print image2xy(pyfits.open(sys.argv[1])[0].data)
-filename = 'satellite-astrophoto4.jpg'
-img = Image.open(filename)
-img.load()
-data = np.asarray(img).mean(2)
-stars = np.array(image2xy(data))
-    
