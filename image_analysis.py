@@ -25,5 +25,8 @@ def extract_stars(input_array):
     result = fits.open(infilepath.replace('.fits', '.xy.fits'))[1].data
 
     os.unlink(infilepath)
-
+    
+    result['X'] -= 1
+    result['Y'] -= 1
+    
     return result
