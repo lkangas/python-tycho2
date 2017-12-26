@@ -48,7 +48,8 @@ T = tycho2('tyc2index.npy', 'tyc2.npy', 'tyc2sup.npy')
 
 fov_radians = np.radians(fov_degrees)
 
-LM = 7
+LM = 8
+image_share = 0.65
 
 #regions = T.regions_within_radius(center_RADEC, radius)
 #RAs, DECs, mags = T.stars_in_regions(regions, LM=LM)
@@ -75,50 +76,97 @@ oY = Y.copy()
 
 x0 = [*center_RADEC, angle, scale]
 
+fig = plt.figure(1)
+fig.clf()
 
-plt.figure(1)
-plt.clf()
+#(ax1, ax2) = fig.subplots(1, 2)
+ax1 = fig.subplots(1,1)
 
-plt.imshow(grayscale_data, cmap='gray')
+fig2 = plt.figure(2)
+fig2.clf()
+ax2 = fig2.subplots(1,1)
+
+
+ax1.imshow(grayscale_data, cmap='gray')
 
 stars = extract_stars(grayscale_data)
 stars.sort(order='FLUX')
 
 # number of catalog stars <LM within frame
 N_catalog = len(np.nonzero(XY_within)[0])
-N_image = round(N_catalog*0.5)
+N_image = round(N_catalog*image_share)
 
 print(N_catalog, N_image)
 
+ostars = stars.copy()
+ostars = ostars[-400:]
+
 stars = stars[-N_image:]
 
+dist = None
 def fun(x):
     xy = transform(RAs, DECs, *x)
-    metric, distances, inds = icp_metric(stars, xy, True)
-    plt.plot(sorted(distances), '.-')
+    #metric, distances, inds = icp_metric(stars, xy, True)
+    #plt.plot(sorted(distances), '.-')
+    #dist = distances
+    metric = icp_metric(stars, xy)
     return metric
 
-plt.figure(2)
+#plt.figure(2)
+#plt.clf()
 res = fmin(fun, x0)
+#plt.plot(sorted(distances), '.-')
 
-plt.figure(1)
+
+
 X, Y = transform(RAs, DECs, *res)
 
+line_scale = 25
+line_offset = .1
 
-mag_sizes = (LM-mags)**2.5/15+.3
-
+mag_sizes = (LM-mags)**2.5/line_scale+line_offset
 min_flux = stars['FLUX'].min()
-flux_sizes = (stars['FLUX']-min_flux)/8/15+.3
+flux_sizes = (stars['FLUX']-min_flux)/8/line_scale+line_offset
 
-plt.scatter(stars['X'], stars['Y'], 50, marker='o', linewidth=flux_sizes, facecolors='none', edgecolors='lime')
-plt.scatter(X, Y, 100, linewidth=mag_sizes, marker='o', facecolors='none', edgecolors='red')
+catalog_color = 'yellow'
+image_color = 'cyan'
+star_alpha = 0
+o_size = 40
+
+ax1.scatter(stars['X'], stars['Y'], o_size, marker='o', linewidth=flux_sizes, facecolors='none', edgecolors=image_color, alpha=star_alpha)
+ax1.scatter(X, Y, o_size*4, linewidth=mag_sizes, marker='o', facecolors='none', edgecolors=catalog_color, alpha=star_alpha)
 #plt.scatter(X, Y, 100, linewidth=mag_sizes, marker='x', color='red')
 
 from icp import icp_metric
 
 metric, dists, inds = icp_metric(stars, (X, Y), True)
 
+dist_limit = np.percentile(dists, 95)
+
+ex = 10
+
 for k,i in enumerate(inds):
-    xline = [stars['X'][k], X[i]]
-    yline = [stars['Y'][k], Y[i]]
-    plt.plot(xline, yline, '-', color='yellow')
+    color = 'red' if dists[k] > dist_limit else 'lime'
+    xline = np.array([stars['X'][k], X[i]])
+    yline = np.array([stars['Y'][k], Y[i]])
+    
+    xmean = xline.mean()
+    ymean = yline.mean()
+    
+    xline -= xmean
+    yline -= ymean
+    
+    xline *= ex
+    yline *= ex
+    
+    xline += xmean
+    yline += ymean    
+    
+    ax1.plot(xline, yline, '-', color=color)
+    
+ax1.set_ylim(-1, resolution[1]+1)
+ax1.set_xlim(-1, resolution[0]+1)
+ax1.invert_yaxis()
+
+ax2.plot(sorted(dists), '.-')
+ax2.axhline(dist_limit)
