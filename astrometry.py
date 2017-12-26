@@ -5,8 +5,9 @@ import requests
 
 API_KEY = 'ailckcattnyvxxfu'
 SERVER = 'nova.astrometry.net'
+#SERVER = 'localhost:8080'
 
-def solve(filename, session_key=None, api_key=None):
+def solve(filename, session_key=None, api_key=API_KEY):
     if not session_key:
         print('Logging in with apikey')
         session_key = login(api_key)
@@ -70,7 +71,10 @@ def login(api_key):
 
 
 def submit_image(filename, session_key):
-    arguments_json = json.dumps({'session': session_key})
+    arguments_json = json.dumps({
+        'session': session_key,
+        'allow_commercial_use': 'n'
+        })
     _, filename_tail = os.path.split(filename)
 
     multipart_data = {
@@ -80,11 +84,14 @@ def submit_image(filename, session_key):
 
     upload_url = 'http://{}/api/upload'.format(SERVER)
     response = requests.post(upload_url, files=multipart_data)
+    if response.status_code != 200:
+        raise RuntimeError('API responded with HTTP {}'.format(response.status_code))
+
     response_json = response.json()
     if response_json['status'] != 'success':
-        raise RuntimeError('Could not process image!')
+        raise RuntimeError('Could not process image: {}'.format(response_json))
     return response_json['subid']
 
 
 if __name__ == '__main__':
-    solve('orion.jpg')
+    print(solve('cygnus.jpg')[0])
