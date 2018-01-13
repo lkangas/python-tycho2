@@ -24,3 +24,11 @@ def icp_metric(image_stars, catalog_stars, vectors=False):
     
     return closest_distances.sum(), \
         closest_distances, closest_indices.astype('int')
+        
+def metric(image_stars, catalog_stars):
+    catalog_X, catalog_Y = catalog_stars
+    dx = image_stars['X'] - catalog_X
+    dy = image_stars['Y'] - catalog_Y
+    r2 = dx**2 + dy**2
+    
+    return r2.sum()
